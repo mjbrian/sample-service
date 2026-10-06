@@ -1,0 +1,42 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+        args: [--allow-multiple-documents]
+        exclude: /templates/
+      - id: check-merge-conflict
+      - id: check-added-large-files
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.30.0
+    hooks:
+      - id: gitleaks
+  - repo: local
+    hooks:
+      - id: go-mod-tidy
+        name: go mod tidy
+        entry: go mod tidy
+        language: system
+        files: \.(go|mod|sum)$
+        pass_filenames: false
+      - id: golangci-lint
+        name: golangci-lint
+        entry: golangci-lint run --new-from-rev HEAD --fix
+        language: system
+        types: [go]
+        pass_filenames: false
+      # When a repo has a Go module outside the root, copy both hooks and run them in that folder.
+      # - id: go-mod-tidy-test
+      #   name: go mod tidy (test)
+      #   entry: bash -c 'cd test && go mod tidy'
+      #   language: system
+      #   files: ^test/
+      #   pass_filenames: false
+      # - id: golangci-lint-test
+      #   name: golangci-lint (test)
+      #   entry: bash -c 'cd test && golangci-lint run --new-from-rev HEAD --fix'
+      #   language: system
+      #   files: ^test/.*\.go$
+      #   pass_filenames: false
