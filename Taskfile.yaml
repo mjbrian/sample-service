@@ -1,0 +1,12 @@
+version: '3'
+tasks:
+  setup:
+    cmds: [mise install, pre-commit install]
+  lint:
+    cmds: [golangci-lint run, helm lint charts/sample-service]
+  test:
+    cmds: [go test -race ./..., helm unittest charts/sample-service]
+  build:
+    cmds: [docker buildx build --platform linux/arm64 -t sample-service:dev --load .]
+  run:
+    cmds: [go run ./cmd/server]
