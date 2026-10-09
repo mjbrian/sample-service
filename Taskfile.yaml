@@ -10,3 +10,32 @@ tasks:
     cmds: [docker buildx build --platform linux/arm64 -t sample-service:dev --load .]
   run:
     cmds: [go run ./cmd/server]
+  push:
+    desc: Build the image and push it to the local cluster registry
+    deps: [build]
+    vars:
+      TAG:
+        sh: git rev-parse --short HEAD
+    cmds:
+      - docker tag sample-service:dev localhost:5003/sample-service:{{.TAG}}
+      - docker push localhost:5003/sample-service:{{.TAG}}
+      - echo "Pushed k3d-lab-registry.localhost:5003/sample-service:{{.TAG}}"
+  deploy:
+    desc: Build, push, and roll out the current commit to the local cluster
+    deps: [push]
+    vars:
+      TAG:
+        sh: git rev-parse --short HEAD
+    preconditions:
+      - sh: git diff --quiet && git diff --cached --quiet
+        msg: "Commit your changes first, so the image tag matches the code"
+      - sh: kubectl --context k3d-lab get namespace sample
+        msg: "Apply deploy/k8s once by hand first, as in P1.2"
+    cmds:
+      - kubectl --context k3d-lab -n sample set image deploy/sample-service app=k3d-lab-registry.localhost:5003/sample-service:{{.TAG}}
+      - kubectl --context k3d-lab -n sample rollout status deploy/sample-service --timeout=120s
+  k8s:apply:
+    desc: Create the namespace and its guardrails, then apply every other manifest
+    cmds:
+      - kubectl --context k3d-lab apply -f deploy/k8s/namespace.yaml
+      - kubectl --context k3d-lab apply -f deploy/k8s/
