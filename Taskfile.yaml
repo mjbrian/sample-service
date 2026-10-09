@@ -32,7 +32,8 @@ tasks:
       - sh: kubectl --context k3d-lab get namespace sample
         msg: "Apply deploy/k8s once by hand first, as in P1.2"
     cmds:
-      - kubectl --context k3d-lab -n sample set image deploy/sample-service app=k3d-lab-registry.localhost:5003/sample-service:{{.TAG}}
+      - kubectl --context k3d-lab apply -f deploy/k8s/namespace.yaml
+      - sed 's|sample-service:dev|sample-service:{{.TAG}}|' deploy/k8s/app.yaml | kubectl --context k3d-lab apply -f -
       - kubectl --context k3d-lab -n sample rollout status deploy/sample-service --timeout=120s
   k8s:apply:
     desc: Create the namespace and its guardrails, then apply every other manifest
