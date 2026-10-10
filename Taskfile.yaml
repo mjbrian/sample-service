@@ -40,3 +40,12 @@ tasks:
     cmds:
       - kubectl --context k3d-lab apply -f deploy/k8s/namespace.yaml
       - kubectl --context k3d-lab apply -f deploy/k8s/
+  break:
+    desc: Break the service in a random way, or pick one with N=1 to 16
+    cmds: ['./scripts/break.sh {{.N | default "random"}}']
+  break:reveal:
+    desc: Show which break is active
+    cmds: [./scripts/break.sh reveal]
+  break:reset:
+    desc: Undo any break and roll out the good image again
+    cmds: [./scripts/break.sh reset]
