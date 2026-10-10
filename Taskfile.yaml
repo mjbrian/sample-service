@@ -49,3 +49,12 @@ tasks:
   break:reset:
     desc: Undo any break and roll out the good image again
     cmds: [./scripts/break.sh reset]
+  break:cluster:
+    desc: Break the whole cluster in a random way, or pick one with N=1 to 3
+    cmds: ['./scripts/break-cluster.sh {{.N | default "random"}}']
+  break:cluster:reveal:
+    desc: Show which cluster break is active
+    cmds: [./scripts/break-cluster.sh reveal]
+  break:cluster:reset:
+    desc: Undo any cluster break
+    cmds: [./scripts/break-cluster.sh reset]
