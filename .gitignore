@@ -1,0 +1,22 @@
+.break*
+
+# Compiled binaries
+/sample-service
+/bin/
+/dist/
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Test output
+*.test
+*.out
+coverage.*
+
+# Go workspace file (local to your machine)
+go.work
+go.work.sum
+
+# Vendored dependencies, only if you do not use vendoring on purpose
+/vendor/

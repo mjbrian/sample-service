@@ -10,3 +10,51 @@ tasks:
     cmds: [docker buildx build --platform linux/arm64 -t sample-service:dev --load .]
   run:
     cmds: [go run ./cmd/server]
+  push:
+    desc: Build the image and push it to the local cluster registry
+    deps: [build]
+    vars:
+      TAG:
+        sh: git rev-parse --short HEAD
+    cmds:
+      - docker tag sample-service:dev localhost:5003/sample-service:{{.TAG}}
+      - docker push localhost:5003/sample-service:{{.TAG}}
+      - echo "Pushed k3d-lab-registry.localhost:5003/sample-service:{{.TAG}}"
+  deploy:
+    desc: Build, push, and roll out the current commit to the local cluster
+    deps: [push]
+    vars:
+      TAG:
+        sh: git rev-parse --short HEAD
+    preconditions:
+      - sh: git diff --quiet && git diff --cached --quiet
+        msg: "Commit your changes first, so the image tag matches the code"
+      - sh: kubectl --context k3d-lab get namespace sample
+        msg: "Apply deploy/k8s once by hand first, as in P1.2"
+    cmds:
+      - kubectl --context k3d-lab apply -f deploy/k8s/namespace.yaml
+      - for f in deploy/k8s/*.yaml; do echo ---; cat "$f"; done | sed 's|sample-service:dev|sample-service:{{.TAG}}|' | kubectl --context k3d-lab apply -f -
+      - kubectl --context k3d-lab -n sample rollout status deploy/sample-service --timeout=120s
+  k8s:apply:
+    desc: Create the namespace and its guardrails, then apply every other manifest
+    cmds:
+      - kubectl --context k3d-lab apply -f deploy/k8s/namespace.yaml
+      - kubectl --context k3d-lab apply -f deploy/k8s/
+  break:
+    desc: Break the service in a random way, or pick one with N=1 to 16
+    cmds: ['./scripts/break.sh {{.N | default "random"}}']
+  break:reveal:
+    desc: Show which break is active
+    cmds: [./scripts/break.sh reveal]
+  break:reset:
+    desc: Undo any break and roll out the good image again
+    cmds: [./scripts/break.sh reset]
+  break:cluster:
+    desc: Break the whole cluster in a random way, or pick one with N=1 to 3
+    cmds: ['./scripts/break-cluster.sh {{.N | default "random"}}']
+  break:cluster:reveal:
+    desc: Show which cluster break is active
+    cmds: [./scripts/break-cluster.sh reveal]
+  break:cluster:reset:
+    desc: Undo any cluster break
+    cmds: [./scripts/break-cluster.sh reset]

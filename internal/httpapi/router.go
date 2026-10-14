@@ -2,7 +2,9 @@ package httpapi
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
+	"os"
 	"strconv"
 	"sync/atomic"
 	"time"
@@ -20,8 +22,12 @@ var (
 		Name: "http_request_duration_seconds", Help: "HTTP request latency.",
 		Buckets: prometheus.DefBuckets,
 	}, []string{"route"})
+
+	// hold keeps debug allocations alive so the memory stays in use.
+	hold [][]byte
 )
 
+// NewRouter returns the service's HTTP handler. ready controls /readyz.
 func NewRouter(ready *atomic.Bool) http.Handler {
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /healthz", func(w http.ResponseWriter, _ *http.Request) {
@@ -36,6 +42,19 @@ func NewRouter(ready *atomic.Bool) http.Handler {
 	})
 	mux.Handle("GET /metrics", promhttp.Handler())
 	mux.Handle("GET /api/hello", instrument("/api/hello", http.HandlerFunc(hello)))
+
+	// Only for break drills. Never set DEBUG_ENDPOINTS in production.
+	if os.Getenv("DEBUG_ENDPOINTS") == "true" {
+		mux.HandleFunc("GET /debug/alloc", func(w http.ResponseWriter, r *http.Request) {
+			mb, _ := strconv.Atoi(r.URL.Query().Get("mb"))
+			buf := make([]byte, mb<<20)
+			for i := range buf {
+				buf[i] = 1 // touch every page so the memory is really used
+			}
+			hold = append(hold, buf)
+			_, _ = fmt.Fprintf(w, "holding %d allocations\n", len(hold))
+		})
+	}
 	return mux
 }
 
