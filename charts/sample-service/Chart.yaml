@@ -1,0 +1,9 @@
+apiVersion: v2
+name: sample-service
+description: Lab sample HTTP service
+type: application
+version: 0.1.0
+appVersion: "dev"
+maintainers:
+  - name: mjbrian
+    url: https://github.com/mjbrian

@@ -1,0 +1,21 @@
+suite: deployment
+templates: [deployment.yaml, configmap.yaml]
+tests:
+  - it: uses the tag from values
+    template: deployment.yaml
+    set:
+      image.tag: abc123
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[0].image
+          value: k3d-lab-registry.localhost:5003/sample-service:abc123
+  - it: never sets a CPU limit
+    template: deployment.yaml
+    asserts:
+      - notExists:
+          path: spec.template.spec.containers[0].resources.limits.cpu
+  - it: leaves replicas to the HPA when it is on
+    template: deployment.yaml
+    asserts:
+      - notExists:
+          path: spec.replicas
