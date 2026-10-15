@@ -1,0 +1,22 @@
+nameOverride: ""
+replicaCount: 2
+image:
+  repository: k3d-lab-registry.localhost:5003/sample-service
+  tag: ""
+config:
+  PORT: "8080"
+resources:
+  requests: {cpu: 50m, memory: 32Mi}
+  limits: {memory: 64Mi}
+ingress:
+  host: sample.127.0.0.1.sslip.io
+  tls: false
+  clusterIssuer: lab-ca
+hpa:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 6
+  cpuUtilization: 70
+networkPolicy:
+  enabled: true
+commonLabels: {}

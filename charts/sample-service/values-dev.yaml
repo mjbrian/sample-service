@@ -1,0 +1,3 @@
+hpa:
+  enabled: false
+replicaCount: 1
