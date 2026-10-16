@@ -14,8 +14,13 @@ kind: Ingress
 metadata:
   name: sample-service
   namespace: sample
+  annotations:
+    cert-manager.io/cluster-issuer: lab-ca
 spec:
   ingressClassName: traefik
+  tls:
+    - hosts: [sample.127.0.0.1.sslip.io]
+      secretName: sample-tls
   rules:
     - host: sample.127.0.0.1.sslip.io
       http:
