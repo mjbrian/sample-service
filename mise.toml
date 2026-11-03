@@ -1,1 +1,10 @@
+[settings]
+experimental = true
+lockfile = true
+
 [tools]
+terraform = "1"
+tflint = "0"
+shellcheck = "0"
+pre-commit = "4"
+"aqua:gitleaks/gitleaks" = "8"
