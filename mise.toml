@@ -6,5 +6,5 @@ lockfile = true
 terraform = "1"
 tflint = "0"
 shellcheck = "0"
-pre-commit = "4"
+"github:j178/prek" = "0"
 "aqua:gitleaks/gitleaks" = "8"
